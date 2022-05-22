@@ -14,7 +14,14 @@ body {
 
 input {
     padding: 0.25em 0.75em;
-    margin: 0.5em 0.5em;
+    margin: 0.8em 0.5em;
+    border-width: 2px;
+    border-radius: 5px;
+    transition: 0.1s;
+}
+
+input[isHighlighted] {
+    box-shadow: 0px 0px 10px 5px #AD66D5AA;
 }
 
 button {
@@ -23,6 +30,8 @@ button {
     margin: 0.5em 0.5em;
     cursor: pointer;
     user-select: none;
+    border-width: 1px;
+    border-radius: 5px;
 }
 
 .filePath {
