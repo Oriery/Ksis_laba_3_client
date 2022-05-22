@@ -12,6 +12,9 @@ let b_copy = document.getElementById("b_copy");
 let b_delete = document.getElementById("b_delete");
 let b_files = document.getElementById("b_files");
 
+// Для сообщений об ошибке или удаче
+let t_response = document.getElementById("t_response");
+
 let files_list = document.getElementById("files_list");
 
 b_put.onclick = () => {
@@ -21,17 +24,14 @@ b_put.onclick = () => {
         reader.readAsText(file, "UTF-8");
 
         reader.onload = function(evt) {
-            doRequest("PUT", server_url, evt.target.result, "", i_urlTo.value)
-                .then(data => {
-                    console.log(data);
-                });
+            doRequest("PUT", server_url, evt.target.result, "", i_urlTo.value).catch(() => {});
         }
 
         reader.onerror = function() {
-            console.log("Ошибка при чтении файла");
+            showMessage("Ошибка при чтении файла");
         }
     } else {
-        console.log("Файл не выбран");
+        showMessage("Файл не выбран");
     }
 }
 
@@ -42,17 +42,14 @@ b_post.onclick = () => {
         reader.readAsText(file, "UTF-8");
 
         reader.onload = function(evt) {
-            doRequest("POST", server_url, evt.target.result, "", i_urlTo.value)
-                .then(data => {
-                    console.log(data);
-                });
+            doRequest("POST", server_url, evt.target.result, "", i_urlTo.value).catch(() => {})
         }
 
         reader.onerror = function() {
-            console.log("Ошибка при чтении файла");
+            showMessage("Ошибка при чтении файла");
         }
     } else {
-        console.log("Файл не выбран");
+        showMessage("Файл не выбран");
     }
 }
 
@@ -78,33 +75,24 @@ b_get.onclick = () => {
                     }
                 }
             })
-        })
+        }, () => { return new Promise((resolve, reject) => { reject() }) })
         // Create a new response out of the stream
-        .then(stream => new Response(stream))
+        .then(stream => new Response(stream), () => { return new Promise((resolve, reject) => { reject() }) })
         // Create an object URL for the response
-        .then(response => response.blob())
-        .then(blob => download(blob, basename(i_urlFrom.value)))
+        .then(response => response.blob(), () => { return new Promise((resolve, reject) => { reject() }) })
+        .then(blob => download(blob, basename(i_urlFrom.value)), () => {})
 }
 
 b_delete.onclick = () => {
-    doRequest("DELETE", server_url, "", i_urlFrom.value)
-        .then(response => {
-            console.log(response);
-        });
+    doRequest("DELETE", server_url, "", i_urlFrom.value).catch(() => {});
 }
 
 b_copy.onclick = () => {
-    doRequest("COPY", server_url, "", i_urlFrom.value, i_urlTo.value)
-        .then(response => {
-            console.log(response);
-        });
+    doRequest("COPY", server_url, "", i_urlFrom.value, i_urlTo.value).catch(() => {});
 }
 
 b_move.onclick = () => {
-    doRequest("MOVE", server_url, "", i_urlFrom.value, i_urlTo.value)
-        .then(response => {
-            console.log(response);
-        });
+    doRequest("MOVE", server_url, "", i_urlFrom.value, i_urlTo.value).catch(() => {});
 }
 
 b_files.onclick = () => {
@@ -117,8 +105,8 @@ b_files.onclick = () => {
                         text.split(/(?<=")\s(?=")/).join("</div><div class=\"filePath\">")
                         .replaceAll("\"", "") +
                         "</div>";
-                })
-        })
+                }, () => {})
+        }, () => {})
 }
 
 b_get.addEventListener("mouseenter", () => { highlightNeededInputs(false, true, false) })
@@ -148,35 +136,42 @@ files_list.onclick = e => {
         })
 }
 
-async function doRequest(methodd, url, data = "", fileFrom = "", fileTo = "") {
-    if (fileFrom.length > 0) {
-        url += '?fileFrom=' + fileFrom;
-        if (fileTo.length > 0) {
-            url += '&fileTo=' + fileTo;
+function doRequest(methodd, url, data = "", fileFrom = "", fileTo = "") {
+    return new Promise((resolve, reject) => {
+        if (fileFrom.length > 0) {
+            url += '?fileFrom=' + fileFrom;
+            if (fileTo.length > 0) {
+                url += '&fileTo=' + fileTo;
+            }
+        } else {
+            if (fileTo.length > 0) {
+                url += '?fileTo=' + fileTo;
+            }
         }
-    } else {
-        if (fileTo.length > 0) {
-            url += '?fileTo=' + fileTo;
-        }
-    }
 
-    const response = await fetch(url, data.length > 0 ? {
-        method: methodd,
-        headers: {
-            'Content-Type': 'text/plain',
-        },
-        body: data
-    } : {
-        method: methodd,
-        headers: {
-            'Content-Type': 'text/plain',
-        }
-    });
-    if (response.ok) {
-        return response;
-    } else {
-        return null;
-    }
+        fetch(url, data.length > 0 ? {
+                method: methodd,
+                headers: {
+                    'Content-Type': 'text/plain',
+                },
+                body: data
+            } : {
+                method: methodd,
+                headers: {
+                    'Content-Type': 'text/plain',
+                }
+            })
+            .then(response => {
+                    showResponse(response);
+
+                    if (response.ok) {
+                        return resolve(response);
+                    } else {
+                        return reject();
+                    }
+                },
+                () => { return reject() });
+    })
 }
 
 // Function to download data to a file
@@ -220,4 +215,24 @@ function highlightNeededInputs(file = false, from = false, to = false) {
     } else {
         i_urlTo.removeAttribute("isHighlighted");
     }
+}
+
+function showResponse(response) {
+    let message;
+    if (response.ok) {
+        message = "Успех: ";
+    } else {
+        message = "Ошибка " + response.status + ": ";
+    }
+
+    message += response.statusText;
+
+    showMessage(message);
+}
+
+function showMessage(message) {
+    t_response.innerHTML = message;
+
+    t_response.removeAttribute("hidden");
+    setTimeout(() => { t_response.setAttribute("hidden", "") }, 2000);
 }
