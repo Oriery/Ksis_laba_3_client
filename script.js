@@ -102,7 +102,10 @@ window.onload = function() {
     document.getElementById("b_files").onclick = () => {
         doRequest("FILES", server_url)
             .then(response => {
-                response.text().then(text => { files_list.innerHTML = text })
+                response.text()
+                    .then(text => {
+                        files_list.innerHTML = "<div>" + text.split(/\s/).join("</div><div>") + "</div>";
+                    })
             })
     }
 }
