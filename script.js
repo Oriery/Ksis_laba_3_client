@@ -104,7 +104,11 @@ window.onload = function() {
             .then(response => {
                 response.text()
                     .then(text => {
-                        files_list.innerHTML = "<div>" + text.split(/\s/).join("</div><div>") + "</div>";
+                        files_list.innerHTML =
+                            "<div class=\"filePath\">" +
+                            text.split(/(?<=")\s(?=")/).join("</div><div class=\"filePath\">")
+                            .replaceAll("\"", "") +
+                            "</div>";
                     })
             })
     }
@@ -158,4 +162,18 @@ function download(data, filename) {
 
 function basename(path) {
     return path.split('/').reverse()[0];
+}
+
+files_list.onclick = e => {
+    if (e.target == files_list) return;
+
+    const textCopied = " <span style=\"color:blue;\">(copied)</span>";
+
+    e.target.innerHTML = e.target.innerHTML.replace(textCopied, "");
+
+    navigator.clipboard.writeText(e.target.innerHTML)
+        .then(() => {
+            e.target.innerHTML += textCopied;
+            setTimeout(() => { e.target.innerHTML = e.target.innerHTML.replace(textCopied, "") }, 600);
+        })
 }

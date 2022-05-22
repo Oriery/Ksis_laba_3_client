@@ -24,3 +24,11 @@ button {
     cursor: pointer;
     user-select: none;
 }
+
+.filePath {
+    transition: 0.1s;
+}
+
+.filePath:hover {
+    transform: scale(1.03);
+}
