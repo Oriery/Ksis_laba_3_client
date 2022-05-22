@@ -3,6 +3,7 @@ const server_url = 'http://localhost/Ksis_laba_3_server/';
 let i_file = document.getElementById("i_file");
 let i_urlFrom = document.getElementById("i_urlFrom");
 let i_urlTo = document.getElementById("i_urlTo");
+let files_list = document.getElementById("files_list");
 
 window.onload = function() {
     document.getElementById("b_put").onclick = () => {
@@ -101,31 +102,8 @@ window.onload = function() {
     document.getElementById("b_files").onclick = () => {
         doRequest("FILES", server_url)
             .then(response => {
-                const reader = response.body.getReader();
-                return new ReadableStream({
-                    start(controller) {
-                        return pump();
-
-                        function pump() {
-                            return reader.read().then(({ done, value }) => {
-                                // When no more data needs to be consumed, close the stream
-                                if (done) {
-                                    controller.close();
-                                    return;
-                                }
-                                // Enqueue the next data chunk into our target stream
-                                controller.enqueue(value);
-                                return pump();
-                            });
-                        }
-                    }
-                })
+                response.text().then(text => { files_list.innerHTML = text })
             })
-            // Create a new response out of the stream
-            .then(stream => new Response(stream))
-            // Create an object URL for the response
-            .then(response => response.blob())
-            .then(blob => download(blob, "files list.txt"))
     }
 }
 
