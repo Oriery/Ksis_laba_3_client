@@ -172,6 +172,9 @@ files_list.onclick = e => {
 }
 
 function doRequest(methodd, url, data = "", fileFrom = "", fileTo = "") {
+    fileFrom = fileFrom.trim();
+    fileTo = fileTo.trim();
+
     return new Promise((resolve, reject) => {
         if (fileFrom.length > 0) {
             url += '?fileFrom=' + fileFrom;
