@@ -18,6 +18,11 @@ let t_response = document.getElementById("t_response");
 let files_list = document.getElementById("files_list");
 
 b_put.onclick = () => {
+    if (i_urlTo.value.length == 0) {
+        showMessage("Файл To не выбран");
+        return;
+    }
+
     let file = i_file.files[0];
     if (file) {
         var reader = new FileReader();
@@ -36,6 +41,11 @@ b_put.onclick = () => {
 }
 
 b_post.onclick = () => {
+    if (i_urlTo.value.length == 0) {
+        showMessage("Файл To не выбран");
+        return;
+    }
+
     let file = i_file.files[0];
     if (file) {
         var reader = new FileReader();
@@ -54,6 +64,11 @@ b_post.onclick = () => {
 }
 
 b_get.onclick = () => {
+    if (i_urlFrom.value.length == 0) {
+        showMessage("Файл From не выбран");
+        return;
+    }
+
     doRequest("GET", server_url, "", i_urlFrom.value)
         .then(response => {
             const reader = response.body.getReader();
@@ -84,14 +99,34 @@ b_get.onclick = () => {
 }
 
 b_delete.onclick = () => {
+    if (i_urlFrom.value.length == 0) {
+        showMessage("Файл From не выбран");
+        return;
+    }
     doRequest("DELETE", server_url, "", i_urlFrom.value).catch(() => {});
 }
 
 b_copy.onclick = () => {
+    if (i_urlFrom.value.length == 0) {
+        showMessage("Файл From не выбран");
+        return;
+    }
+    if (i_urlTo.value.length == 0) {
+        showMessage("Файл To не выбран");
+        return;
+    }
     doRequest("COPY", server_url, "", i_urlFrom.value, i_urlTo.value).catch(() => {});
 }
 
 b_move.onclick = () => {
+    if (i_urlFrom.value.length == 0) {
+        showMessage("Файл From не выбран");
+        return;
+    }
+    if (i_urlTo.value.length == 0) {
+        showMessage("Файл To не выбран");
+        return;
+    }
     doRequest("MOVE", server_url, "", i_urlFrom.value, i_urlTo.value).catch(() => {});
 }
 
