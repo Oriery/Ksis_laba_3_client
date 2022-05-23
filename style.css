@@ -41,3 +41,7 @@ button {
 .filePath:hover {
     transform: scale(1.03);
 }
+
+#files_list {
+    width: 100%;
+}
